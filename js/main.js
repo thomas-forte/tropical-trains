@@ -17,24 +17,35 @@
   // 4 - Bonus objectives (if time permits)
   // 5 - Pretty up and segment code to look good because I should have been doing it the whole time
 
-  var graph = {
-    nodes: [
-      { index: 0, name: "111" },
-      { index: 1, name: "222" },
-      { index: 2, name: "333" },
-      { index: 3, name: "444" },
-      { index: 4, name: "555" },
-      { index: 5, name: "666" }],
-    edges: [
-      { source: 0, target: 1 },
-      { source: 0, target: 2 },
-      { source: 0, target: 3 },
-      { source: 0, target: 4 },
-      { source: 0, target: 5 }]
-  };
+  var vertexs = [];
+  var count = 0;
+
+  var edges = d3.csv.parse("source,target,distance\nhawaii,mawii,4\ncoffee,lattee,10", function(row) {
+    row.distance = +row.distance;
+
+    if (!vertexs[row.source]){
+      vertexs.push({
+        name: row.source,
+        index: count
+      });
+      row.source = count;
+      count++;
+    }
+
+    if (!vertexs[row.target]){
+      vertexs.push({
+        name: row.target,
+        index: count
+      });
+      row.target = count;
+      count++;
+    }
+
+    return row;
+  });
 
   var width = 960,
-      height = 500;
+      height = 600;
 
   var svg = d3.select("body").append("svg")
       .attr("width", width)
@@ -44,20 +55,20 @@
 
   var force = d3.layout.force()
       .size([width, height])
-      .nodes(graph.nodes)
-      .links(graph.edges)
+      .nodes(vertexs)
+      .links(edges)
       .linkDistance(30)
-      .charge(-60)
+      .charge(-80)
       .start();
 
   var link = svg.selectAll(".link")
-      .data(graph.edges)
+      .data(edges)
       .enter().append("line")
       .attr("class", "link")
       .style("stroke-width", function(d) { return Math.sqrt(d.value); });
 
   var node = svg.selectAll(".node")
-      .data(graph.nodes)
+      .data(vertexs)
       .enter().append("circle")
       .attr("class", "node init")
       .attr("r", 10);
