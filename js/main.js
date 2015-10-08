@@ -85,6 +85,12 @@
       .attr('class', 'text')
       .text(function(d) { return d.name; });
 
+  var textDist = svg.selectAll(".txt")
+      .data(force.links())
+      .enter().append("text")
+      .attr('class', 'text')
+      .text(function(d) { return d.distance + "km"; });
+
   force.on("tick", function() {
       node.attr("cx", function(d) { return d.x; })
           .attr("cy", function(d) { return d.y; });
@@ -96,5 +102,8 @@
 
       text.attr("x", function(d) { return d.x + 15; })
           .attr("y", function(d) { return d.y + 4; });
+
+      textDist.attr("x", function(d) { return (d.source.x + d.target.x)/2; })
+          .attr("y", function(d) { return (d.source.y + d.target.y)/2; });
   });
 })();
