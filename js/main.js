@@ -20,8 +20,8 @@
   var dataStream = "source,target,distance\n" + "Frolia,Hailea,9\nHailea,Hanalei,5\nHanalei,Maeulia,6\nHauauai,Lainea,8\nKaleola,Maeulia,7\nLainea,Hailea,5\nLakua,Hauauai,3\nMaeulia,Hailea,12\nPaukaa,Hauauai,6\nPoipu,Paukaa,9\nHailea,Waimea,4\nWaimea,Lakua,9\nLakua,Poipu,7\nWaimea,Kaleola,4\nMaeulia,Paukaa,14\nHailea,Lainea,8";
   var vertexs = [];
   var count = 0;
-  var width = 960;
-  var height = 600;
+  var width = window.innerWidth;
+  var height = window.innerHeight;
   var forceCharge = -5000;
   var nodeRadius = 10;
   var linkDistanceScalar = 1;
@@ -96,7 +96,7 @@
           .attr("x2", function(d) { return d.target.x; })
           .attr("y2", function(d) { return d.target.y; });
 
-      text.attr("x", function(d) { return d.x - 30; })
-          .attr("y", function(d) { return d.y - 20; });
+      text.attr("x", function(d) { return d.x + 15; })
+          .attr("y", function(d) { return d.y + 4; });
   });
 })();
