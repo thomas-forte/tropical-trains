@@ -75,7 +75,7 @@
         .enter().append("svg:marker")    // This section adds in the arrows
         .attr("id", String)
         .attr("viewBox", "0 -5 10 10")
-        .attr("refX", 13)
+        .attr("refX", 16)
         .attr("refY", 0)
         .attr("markerWidth", 6)
         .attr("markerHeight", 6)
@@ -98,7 +98,7 @@
 
     // draw circles on nodes
     node.append("circle")
-        .attr("r", 5);
+        .attr("r", 10);
 
     // draw text on nodes
     node.append("text")
