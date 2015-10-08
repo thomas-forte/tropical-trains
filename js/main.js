@@ -69,22 +69,20 @@
       .start();
 
   var link = svg.selectAll(".link")
-      .data(edges)
+      .data(force.links())
       .enter().append("line")
       .attr("class", "link")
 
   var node = svg.selectAll(".node")
-      .data(vertexs)
+      .data(force.nodes())
       .enter().append("circle")
-      .attr("class", "node init")
+      .attr("class", "node")
       .attr("r", nodeRadius);
 
   var text = svg.selectAll(".text")
-      .data(vertexs)
+      .data(force.nodes())
       .enter().append("text")
-      .attr('x', function(d) { return d.x; })
-      .attr('y', function(d) { return d.y; })
-      .attr('class', 'text init')
+      .attr('class', 'text')
       .text(function(d) { return d.name; });
 
   force.on("tick", function() {
