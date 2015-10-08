@@ -68,35 +68,35 @@
       .charge(forceCharge)
       .start();
 
-    var link = svg.selectAll(".link")
-        .data(edges)
-        .enter().append("line")
-        .attr("class", "link")
+  var link = svg.selectAll(".link")
+      .data(edges)
+      .enter().append("line")
+      .attr("class", "link")
 
-    var node = svg.selectAll(".node")
-        .data(vertexs)
-        .enter().append("circle")
-        .attr("class", "node init")
-        .attr("r", nodeRadius);
+  var node = svg.selectAll(".node")
+      .data(vertexs)
+      .enter().append("circle")
+      .attr("class", "node init")
+      .attr("r", nodeRadius);
 
-    var text = svg.selectAll(".text")
-        .data(vertexs)
-        .enter().append("text")
-        .attr('x', function(d) { return d.x; })
-        .attr('y', function(d) { return d.y; })
-        .attr('class', 'text init')
-        .text(function(d) { return d.name; });
+  var text = svg.selectAll(".text")
+      .data(vertexs)
+      .enter().append("text")
+      .attr('x', function(d) { return d.x; })
+      .attr('y', function(d) { return d.y; })
+      .attr('class', 'text init')
+      .text(function(d) { return d.name; });
 
-    force.on("tick", function() {
-        node.attr("cx", function(d) { return d.x; })
-            .attr("cy", function(d) { return d.y; });
+  force.on("tick", function() {
+      node.attr("cx", function(d) { return d.x; })
+          .attr("cy", function(d) { return d.y; });
 
-        link.attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.target.x; })
-            .attr("y2", function(d) { return d.target.y; });
+      link.attr("x1", function(d) { return d.source.x; })
+          .attr("y1", function(d) { return d.source.y; })
+          .attr("x2", function(d) { return d.target.x; })
+          .attr("y2", function(d) { return d.target.y; });
 
-        text.attr("x", function(d) { return d.x - 30; })
-            .attr("y", function(d) { return d.y - 20; });
-    });
+      text.attr("x", function(d) { return d.x - 30; })
+          .attr("y", function(d) { return d.y - 20; });
+  });
 })();
