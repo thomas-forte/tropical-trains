@@ -3,10 +3,12 @@ body {
 }
 .link {
   stroke: #999;
+  stroke-width: 3px;
   stroke-opacity: .6;
+  fill: none;
 }
 .node {
   stroke: black;
   fill: red;
-  stroke-width: 1.5px;
+  stroke-width: 1px;
 }

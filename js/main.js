@@ -66,44 +66,57 @@
       .links(edges)
       .linkDistance(function(d){ return d.distance * linkDistanceScalar;})
       .charge(forceCharge)
+      .on("tick", tick)
       .start();
 
-  var link = svg.selectAll(".link")
-      .data(force.links())
-      .enter().append("line")
-      .attr("class", "link")
+    // make arrow
+    svg.append("svg:defs").selectAll("marker")
+        .data(["end"])      // Different link/path types can be defined here
+        .enter().append("svg:marker")    // This section adds in the arrows
+        .attr("id", String)
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 13)
+        .attr("refY", 0)
+        .attr("markerWidth", 6)
+        .attr("markerHeight", 6)
+        .attr("orient", "auto")
+        .append("svg:path")
+        .attr("d", "M0,-5L10,0L0,5");
 
-  var node = svg.selectAll(".node")
-      .data(force.nodes())
-      .enter().append("circle")
-      .attr("class", "node")
-      .attr("r", nodeRadius);
+    // make path with arrow tip
+    var path = svg.append("svg:g").selectAll("path")
+        .data(force.links())
+        .enter().append("svg:path")
+        .attr("class", "link")
+        .attr("marker-end", "url(#end)");
 
-  var text = svg.selectAll(".text")
-      .data(force.nodes())
-      .enter().append("text")
-      .attr('class', 'text')
-      .text(function(d) { return d.name; });
+    // make the nodes
+    var node = svg.selectAll(".node")
+        .data(force.nodes())
+        .enter().append("g")
+        .attr("class", "node")
 
-  var textDist = svg.selectAll(".txt")
-      .data(force.links())
-      .enter().append("text")
-      .attr('class', 'text')
-      .text(function(d) { return d.distance + "km"; });
+    // draw circles on nodes
+    node.append("circle")
+        .attr("r", 5);
 
-  force.on("tick", function() {
-      node.attr("cx", function(d) { return d.x; })
-          .attr("cy", function(d) { return d.y; });
+    // draw text on nodes
+    node.append("text")
+        .attr("x", 12)
+        .attr("dy", ".35em")
+        .text(function(d) { return d.name; });
 
-      link.attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return d.target.y; });
+    function tick() {
+        path.attr("d", function(d) {
+            return "M" +
+                d.source.x + "," +
+                d.source.y + "A0,0 0 0,1 " +
+                d.target.x + "," +
+                d.target.y;
+        });
 
-      text.attr("x", function(d) { return d.x + 15; })
-          .attr("y", function(d) { return d.y + 4; });
-
-      textDist.attr("x", function(d) { return (d.source.x + d.target.x)/2; })
-          .attr("y", function(d) { return (d.source.y + d.target.y)/2; });
-  });
+        node
+            .attr("transform", function(d) {
+      	    return "translate(" + d.x + "," + d.y + ")"; });
+    }
 })();
