@@ -18,3 +18,9 @@ body {
 .node.end {
   fill: green;
 }
+.node.transit {
+  fill: yellow;
+}
+.link.transit {
+  stroke: red;
+}
