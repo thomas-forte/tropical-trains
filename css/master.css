@@ -12,3 +12,9 @@ body {
   fill: red;
   stroke-width: 1px;
 }
+.node.start {
+  fill: blue;
+}
+.node.end {
+  fill: green;
+}

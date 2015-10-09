@@ -25,6 +25,8 @@
   var forceCharge = -5000;
   var nodeRadius = 10;
   var linkDistanceScalar = 1;
+  var start = null;
+  var end = null;
 
   var isInList = function(list, x) {
     for (var i = 0; i < list.length; i++) {
@@ -44,6 +46,26 @@
       return count++;
     } else {
       return isInList(vertexs, vertName);
+    }
+  }
+
+  var onNodeClick = function (d) {
+    if (start === null) {
+      d3.select(this).classed("start", true);
+      start = this;
+      d.start = true;
+    } else {
+      if (d.start) {
+        d3.select(this).classed("start", false);
+        d3.select(".end").classed("end",false);
+        d.start = false;
+        start = null;
+        end = null;
+      } else {
+        d3.select(".end").classed("end", false);
+        d3.select(this).classed("end", true);
+        end = this;
+      }
     }
   }
 
@@ -93,18 +115,19 @@
     // make the nodes
     var node = svg.selectAll(".node")
         .data(force.nodes())
-        .enter().append("g")
+        .enter().append("circle")
         .attr("class", "node")
-
-    // draw circles on nodes
-    node.append("circle")
-        .attr("r", 10);
+        .attr("r", 10)
+        .on("click", onNodeClick);
 
     // draw text on nodes
-    node.append("text")
-        .attr("x", 12)
-        .attr("dy", ".35em")
-        .text(function(d) { return d.name; });
+    var text = svg.selectAll(".text")
+      .data(force.nodes())
+      .enter().append("text")
+      .attr('x', function(d) { return d.x; })
+      .attr('y', function(d) { return d.y; })
+      .attr('class', 'text')
+      .text(function(d) { return d.name; });
 
     function tick() {
         path.attr("d", function(d) {
@@ -115,8 +138,10 @@
                 d.target.y;
         });
 
-        node
-            .attr("transform", function(d) {
+        node.attr("transform", function(d) {
       	    return "translate(" + d.x + "," + d.y + ")"; });
+
+        text.attr("x", function(d) { return d.x + 12; })
+        .attr("y", function(d) { return d.y + 5; });
     }
 })();
