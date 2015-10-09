@@ -1,0 +1,5 @@
+To run the program simply open index.html inside your browser.
+
+This was a very interesting challenge, and one I enjoyed! I'm sorry for submitting my project a little late. The island trains project was an enjoyable learning experience as most of my front end experience was strictly CSS. I am fairly satisfied with my work, I do think I can do better. For the time allotted, I spent most of it learning and looking at examples of D3's Force Directed graphs. Though I didn't complete everything I planned I hope that it shows that I desire to work at CrossChx and to continue to grow.
+
+Note: All code is my own unless noted, some snippets may be taken from different examples but modified to fit the problem.
