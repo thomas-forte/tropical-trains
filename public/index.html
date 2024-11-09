@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tropical Trains</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <noscript>Javascript is required to view this page.</noscript>
+    <script type="module">
+      import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const manyBodyChargeStrength = -5000;
+      const linkDistanceMultiplier = 1;
+
+      const links = await d3.csv("island-data.csv", (d) => {
+        return {
+          source: d.source,
+          target: d.target,
+          distance: +d.distance,
+        };
+      });
+
+      // Finds all unique nodes from the links
+      const nodeIds = Array.from(
+        new Set(links.flatMap((d) => [d.source, d.target]))
+      );
+      const nodes = nodeIds.map((id) => ({ id }));
+
+      // Create the SVG
+      const svg = d3
+        .select("body")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      // Define the simulation
+      const simulation = d3
+        .forceSimulation(nodes)
+        // n-body force, negative pushes nodes apart
+        .force("charge", d3.forceManyBody().strength(manyBodyChargeStrength))
+        // centering force
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force(
+          "link",
+          d3
+            .forceLink(links)
+            .id((d) => d.id)
+            .distance((d) => d.distance * linkDistanceMultiplier)
+        )
+        .on("tick", () => {
+          link
+            .attr("x1", (d) => d.source.x)
+            .attr("y1", (d) => d.source.y)
+            .attr("x2", (d) => d.target.x)
+            .attr("y2", (d) => d.target.y)
+            .attr(
+              "d",
+              (d) =>
+                "M" +
+                d.source.x +
+                "," +
+                d.source.y +
+                ", " +
+                d.target.x +
+                "," +
+                d.target.y
+            );
+
+          node.attr("transform", (d) => `translate(${d.x},${d.y})`);
+        });
+
+      // Arrow marker definition
+      svg
+        .append("defs")
+        .append("marker")
+        .attr("id", "arrow")
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 14)
+        .attr("refY", 0)
+        .attr("markerWidth", 6)
+        .attr("markerHeight", 6)
+        .attr("orient", "auto")
+        .append("path")
+        .attr("d", "M0,-5L10,0L0,5");
+
+      // Link definition
+      const link = svg
+        .append("svg:g")
+        .attr("id", "links")
+        .selectAll()
+        .data(links)
+        .join("svg:line")
+        .attr("id", (d) => `line-${d.index}`)
+        .classed("links", true)
+        .attr("marker-end", "url(#arrow)");
+
+      // Node container
+      const node = svg
+        .append("svg:g")
+        .attr("id", "nodes")
+        .selectAll()
+        .data(nodes)
+        .join("svg:g");
+
+      // Node circle
+      node
+        .append("circle")
+        .classed("node", true)
+        .attr("id", (d) => d.id)
+        .attr("r", 10)
+        .on("click", onNodeClick);
+
+      // Node label
+      node
+        .append("text")
+        .classed("label-bg", true)
+        .attr("x", 12)
+        .attr("y", ".35em")
+        .text((d) => d.id)
+        .clone(true)
+        .classed("label-bg", false)
+        .classed("label", true);
+
+      // Summary text
+      const summary = svg.append("text").text("").attr("x", 10).attr("y", 20);
+
+      // initial condition of Frolia and Poipu
+      let first = node.select("#Frolia").classed("selected", true);
+      let second = node.select("#Poipu").classed("selected", true);
+      highlightPath(
+        ...findTheShortestPath(first.datum().id, second.datum().id)
+      );
+
+      function onNodeClick(event, d) {
+        event.stopPropagation();
+
+        // remove the selected class from the first node
+        first.classed("selected", false);
+
+        // set the second node as the first node
+        first = second;
+
+        // set this node as the second node and select it
+        second = d3.select(this);
+        second.classed("selected", true);
+
+        highlightPath(
+          ...findTheShortestPath(first.datum().id, second.datum().id)
+        );
+      }
+
+      function findTheShortestPath(startingId, endingId) {
+        // Initialize the nodes and costs for the Dijkstra algorithm
+        const nodesAndCosts = nodeIds.map((id) => ({
+          id,
+          cost: Infinity,
+          previous: null,
+        }));
+
+        // Set the starting node cost to 0
+        nodesAndCosts.find((d) => d.id === startingId).cost = 0;
+
+        // Create a set of unvisited nodes
+        const unvisited = new Set(nodeIds);
+
+        while (unvisited.size > 0) {
+          // Find the node with the lowest cost
+          nodesAndCosts.sort((a, b) => a.cost - b.cost);
+          const lowestUnvisitedNode = nodesAndCosts.reduceRight((acc, cur) => {
+            if (unvisited.has(cur.id)) {
+              return cur;
+            }
+            return acc;
+          }, null);
+
+          // Remove the lowest cost node from the unvisited set
+          unvisited.delete(lowestUnvisitedNode.id);
+
+          // Get the neighbors of the current node
+          const neighbors = links.filter(
+            (d) => d.source.id === lowestUnvisitedNode.id
+          );
+
+          // Update the cost of the neighbors
+          for (const neighbor of neighbors) {
+            const distance = neighbor.distance;
+
+            const adjustedDistance = lowestUnvisitedNode.cost + distance;
+
+            const neighborNode = nodesAndCosts.find(
+              (d) => d.id === neighbor.target.id
+            );
+            if (adjustedDistance < neighborNode.cost) {
+              neighborNode.cost = adjustedDistance;
+              neighborNode.previous = lowestUnvisitedNode.id;
+            }
+          }
+        }
+
+        // Reconstruct the path from the ending node to the starting node
+        const path = [];
+        let currentId = endingId;
+        const distance = nodesAndCosts.find((d) => d.id === endingId).cost;
+        while (currentId !== null) {
+          path.unshift(currentId);
+          currentId = nodesAndCosts.find((d) => d.id === currentId).previous;
+        }
+
+        return [path, distance];
+      }
+
+      function highlightPath(path, distance) {
+        const pathLinks = [];
+        for (let i = 0; i < path.length - 1; i++) {
+          const source = path[i];
+          const target = path[i + 1];
+          const linkSegment = links.find(
+            (d) => d.source.id === source && d.target.id === target
+          );
+          pathLinks.push(linkSegment);
+        }
+
+        link.classed("selected", false);
+        pathLinks.forEach((d) => {
+          d3.select(`#line-${d.index}`).classed("selected", true);
+        });
+
+        if (distance === Infinity) {
+          summary.text(
+            `There is no path between ${path[0]} and ${path.pop()}.`
+          );
+        } else {
+          summary.text(
+            `The shortest path from ${
+              path[0]
+            } to ${path.pop()} is ${distance} miles long.`
+          );
+        }
+      }
+    </script>
+  </body>
+</html>
