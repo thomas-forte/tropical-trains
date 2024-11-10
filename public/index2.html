@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon2.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Counter Intelligence Map</title>
+    <link rel="stylesheet" href="styles2.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+  </head>
+
+  <body>
+    <div id="map"></div>
+
+    <div class="filter-bar">
+      <select id="age-filter">
+        <option selected>Max Age - Any</option>
+      </select>
+
+      <input id="search" type="text" placeholder="Agent Name" />
+    </div>
+
+    <noscript>Javascript is required to view this page.</noscript>
+
+    <script type="module">
+      import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+      const agents = await d3.csv("agent-data.csv", (d) => {
+        return {
+          lat: +d.lat,
+          lng: +d.lng,
+          sex: d.sex,
+          age: +d.age,
+          name: d.name,
+        };
+      });
+
+      var map = L.map("map").setView([39.8355, -99.0909], 4.25);
+
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      }).addTo(map);
+
+      var maleIcon = L.icon({
+        iconUrl: "person-solid.svg",
+        iconSize: [20, 20 * 1.6],
+        iconAnchor: [10, 30],
+        popupAnchor: [0, -32],
+      });
+
+      var femaleIcon = L.icon({
+        iconUrl: "person-dress-solid.svg",
+        iconSize: [20, 20 * 1.6],
+        iconAnchor: [10, 30],
+      });
+
+      agents.forEach((agent) => {
+        agent.marker = L.marker([agent.lat, agent.lng], {
+          icon: agent.sex == "M" ? maleIcon : femaleIcon,
+          title: agent.name,
+        })
+          .addTo(map)
+          .bindPopup(`Name: ${agent.name} Age: ${agent.age}`);
+      });
+
+      // Age filter functionality
+      const ageElement = document.getElementById("age-filter");
+      const ages = ["<20", "<30", "<40", "<50", "<60", "<70", "<80"];
+      ages.forEach((age) => {
+        const option = document.createElement("option");
+        option.value = parseInt(age.slice(1));
+        option.text = age;
+        ageElement.appendChild(option);
+      });
+      ageElement.addEventListener("change", filterAgents);
+      function filterAgents(event) {
+        const maxAge = event.target.value;
+
+        agents.forEach((agent) => {
+          if (maxAge === "Max Age - Any" || agent.age < maxAge) {
+            agent.marker.setOpacity(1);
+          } else {
+            agent.marker.setOpacity(0);
+          }
+        });
+      }
+
+      // Search functionality
+      document.getElementById("search").addEventListener("keyup", searchAgents);
+      function searchAgents(event) {
+        const searchValue = event.target.value;
+
+        agents.forEach((agent) => agent.marker.setOpacity(1));
+
+        if (searchValue) {
+          agents.forEach((agent) => {
+            if (!agent.name.toLowerCase().includes(searchValue.toLowerCase())) {
+              agent.marker.setOpacity(0.25);
+            }
+          });
+        }
+      }
+    </script>
+  </body>
+</html>

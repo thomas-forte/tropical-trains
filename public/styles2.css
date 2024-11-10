@@ -1,0 +1,26 @@
+body {
+  margin: 0;
+}
+
+#map {
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+}
+
+.filter-bar {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 10;
+
+  display: flex;
+  gap: 1rem;
+
+  > input,
+  > select {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+  }
+}
